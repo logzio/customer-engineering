@@ -29,20 +29,19 @@ for d in $dashboard_dir*/ ; do
         }'
     folder_id=$(curl -X GET "$api_url/grafana/api/search?query=$folder_name&type=dash-folder" \
             -H 'Content-Type: application/json' \
-            -H "X-API-TOKEN: $api_token" | grep -oiE "[0-9]+")
+            -H "X-API-TOKEN: $api_token" | sed -r 's/.*"id":([0-9]+).*/\1/')
 
     for f in $d*.json ; do
         if [[ ! -e $f ]]; then continue; fi
 
         echo "Uploading $f"
-        
+       
         curl -X POST "$api_url/grafana/api/dashboards/db" \
             -H 'Content-Type: application/json' \
              -H "X-API-TOKEN: $api_token" \
             -d "{
                 \"dashboard\": $(cat $f),
                 \"folderid\": $folder_id,
-                \"overwrite\": true
-        }"
+                \"overwrite\": false }"
     done
 done
